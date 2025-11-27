@@ -7,55 +7,46 @@ class InterfazCalculadora:
         self.root = root
         self.root.title("Calculadora Profesional")
         
-        # NUEVO: Configuración de tamaño mínimo y adaptable
+        # Configuración general
         self.root.minsize(350, 550)
         
-        # Detectar tamaño de pantalla y ajustar ventana
-        screen_width = self.root.winfo_screenwidth()
-        screen_height = self.root.winfo_screenheight()
+        screen_w = self.root.winfo_screenwidth()
+        screen_h = self.root.winfo_screenheight()
+        win_w = min(int(screen_w * 0.3), 500)
+        win_h = min(int(screen_h * 0.7), 800)
+        x = (screen_w - win_w) // 2
+        y = (screen_h - win_h) // 2
         
-        # Calcular tamaño apropiado (30% del ancho, 70% del alto, máximo 500x800)
-        window_width = min(int(screen_width * 0.3), 500)
-        window_height = min(int(screen_height * 0.7), 800)
-        
-        # Centrar ventana
-        x = (screen_width - window_width) // 2
-        y = (screen_height - window_height) // 2
-        
-        self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
+        self.root.geometry(f"{win_w}x{win_h}+{x}+{y}")
         self.root.configure(bg="#1e1e2e")
-        
-        # NUEVO: Límite de caracteres
+
         self.MAX_CARACTERES = 15
-        
-        # Instancia de la calculadora
+
+        # Instancia de calculadora
         self.calc = Calculadora()
-        
-        # Variables para la pantalla
+
+        # Variables internas
         self.pantalla_texto = ""
         self.operacion_actual = None
         self.primer_numero = None
         self.resetear_pantalla = False
-        
-        # NUEVO: Vincular evento de redimensionamiento
-        self.root.bind('<Configure>', self.on_resize)
-        
-        # Crear widgets
+
+        self.root.bind("<Configure>", self.on_resize)
+
         self.crear_widgets()
-        
-        # NUEVO: Atajos de teclado
         self.configurar_teclado()
-    
+
+    # ======================================================
+    # CREACIÓN DE WIDGETS
+    # ======================================================
     def crear_widgets(self):
-        # Frame principal con padding proporcional
         self.main_frame = tk.Frame(self.root, bg="#1e1e2e")
         self.main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
-        # ===== PANTALLA PRINCIPAL =====
+
+        # Pantalla
         pantalla_frame = tk.Frame(self.main_frame, bg="#2d2d44", bd=2, relief=tk.RIDGE)
         pantalla_frame.pack(fill=tk.X, pady=(0, 10))
-        
-        # Pantalla de operación (pequeña, arriba)
+
         self.pantalla_operacion = tk.Label(
             pantalla_frame,
             text="",
@@ -67,8 +58,7 @@ class InterfazCalculadora:
             pady=3
         )
         self.pantalla_operacion.pack(fill=tk.X)
-        
-        # Pantalla principal (grande) - NUEVO: Tamaño de fuente adaptable
+
         self.pantalla = tk.Label(
             pantalla_frame,
             text="0",
@@ -80,8 +70,7 @@ class InterfazCalculadora:
             pady=10
         )
         self.pantalla.pack(fill=tk.X)
-        
-        # NUEVO: Label para mostrar límite de caracteres
+
         self.label_limite = tk.Label(
             pantalla_frame,
             text=f"0/{self.MAX_CARACTERES}",
@@ -93,49 +82,61 @@ class InterfazCalculadora:
             pady=2
         )
         self.label_limite.pack(fill=tk.X)
-        
-        # ===== BOTONES =====
+
+        # ===================== BOTONES ======================
         self.botones_frame = tk.Frame(self.main_frame, bg="#1e1e2e")
         self.botones_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
-        
-        # Configurar el grid con peso proporcional
-        for i in range(5):
-            self.botones_frame.grid_rowconfigure(i, weight=1, uniform="row")
+
+        for i in range(7):  # ahora hay más filas
+            self.botones_frame.grid_rowconfigure(i, weight=1)
+
         for i in range(4):
-            self.botones_frame.grid_columnconfigure(i, weight=1, uniform="col")
-        
-        # Definir botones
+            self.botones_frame.grid_columnconfigure(i, weight=1)
+
+        # ------------------ BOTONES -------------------------
         botones = [
-            # Fila 0
+            # FILA 0 (limpieza)
             ("C", 0, 0, 1, "#ef4444", "#ffffff", self.limpiar),
             ("⌫", 0, 1, 1, "#f59e0b", "#ffffff", self.borrar),
             ("%", 0, 2, 1, "#6366f1", "#ffffff", lambda: self.agregar_operador("%")),
             ("÷", 0, 3, 1, "#6366f1", "#ffffff", lambda: self.operacion("÷")),
-            
-            # Fila 1
-            ("7", 1, 0, 1, "#374151", "#ffffff", lambda: self.agregar_numero("7")),
-            ("8", 1, 1, 1, "#374151", "#ffffff", lambda: self.agregar_numero("8")),
-            ("9", 1, 2, 1, "#374151", "#ffffff", lambda: self.agregar_numero("9")),
-            ("×", 1, 3, 1, "#6366f1", "#ffffff", lambda: self.operacion("×")),
-            
-            # Fila 2
-            ("4", 2, 0, 1, "#374151", "#ffffff", lambda: self.agregar_numero("4")),
-            ("5", 2, 1, 1, "#374151", "#ffffff", lambda: self.agregar_numero("5")),
-            ("6", 2, 2, 1, "#374151", "#ffffff", lambda: self.agregar_numero("6")),
-            ("-", 2, 3, 1, "#6366f1", "#ffffff", lambda: self.operacion("-")),
-            
-            # Fila 3
-            ("1", 3, 0, 1, "#374151", "#ffffff", lambda: self.agregar_numero("1")),
-            ("2", 3, 1, 1, "#374151", "#ffffff", lambda: self.agregar_numero("2")),
-            ("3", 3, 2, 1, "#374151", "#ffffff", lambda: self.agregar_numero("3")),
-            ("+", 3, 3, 1, "#6366f1", "#ffffff", lambda: self.operacion("+")),
-            
-            # Fila 4
-            ("0", 4, 0, 2, "#374151", "#ffffff", lambda: self.agregar_numero("0")),
-            (".", 4, 2, 1, "#374151", "#ffffff", lambda: self.agregar_numero(".")),
-            ("=", 4, 3, 1, "#10b981", "#ffffff", self.calcular),
+
+            # FILA 1 — FUNCIONES CIENTÍFICAS NUEVAS
+            ("sin", 1, 0, 1, "#4b5563", "#ffffff", lambda: self.funcion_cientifica("sin")),
+            ("cos", 1, 1, 1, "#4b5563", "#ffffff", lambda: self.funcion_cientifica("cos")),
+            ("tan", 1, 2, 1, "#4b5563", "#ffffff", lambda: self.funcion_cientifica("tan")),
+            ("√",   1, 3, 1, "#4b5563", "#ffffff", lambda: self.funcion_cientifica("sqrt")),
+
+            # FILA 2 — FUNCIONES CIENTÍFICAS NUEVAS
+            ("ln",  2, 0, 1, "#4b5563", "#ffffff", lambda: self.funcion_cientifica("ln")),
+            ("exp", 2, 1, 1, "#4b5563", "#ffffff", lambda: self.funcion_cientifica("exp")),
+            ("x^y", 2, 2, 1, "#4b5563", "#ffffff", lambda: self.funcion_cientifica("pow")),
+            ("π",   2, 3, 1, "#4b5563", "#ffffff", self.insertar_pi),
+
+            # FILA 3
+            ("7", 3, 0, 1, "#374151", "#ffffff", lambda: self.agregar_numero("7")),
+            ("8", 3, 1, 1, "#374151", "#ffffff", lambda: self.agregar_numero("8")),
+            ("9", 3, 2, 1, "#374151", "#ffffff", lambda: self.agregar_numero("9")),
+            ("×", 3, 3, 1, "#6366f1", "#ffffff", lambda: self.operacion("×")),
+
+            # FILA 4
+            ("4", 4, 0, 1, "#374151", "#ffffff", lambda: self.agregar_numero("4")),
+            ("5", 4, 1, 1, "#374151", "#ffffff", lambda: self.agregar_numero("5")),
+            ("6", 4, 2, 1, "#374151", "#ffffff", lambda: self.agregar_numero("6")),
+            ("-", 4, 3, 1, "#6366f1", "#ffffff", lambda: self.operacion("-")),
+
+            # FILA 5
+            ("1", 5, 0, 1, "#374151", "#ffffff", lambda: self.agregar_numero("1")),
+            ("2", 5, 1, 1, "#374151", "#ffffff", lambda: self.agregar_numero("2")),
+            ("3", 5, 2, 1, "#374151", "#ffffff", lambda: self.agregar_numero("3")),
+            ("+", 5, 3, 1, "#6366f1", "#ffffff", lambda: self.operacion("+")),
+
+            # FILA 6
+            ("0", 6, 0, 2, "#374151", "#ffffff", lambda: self.agregar_numero("0")),
+            (".", 6, 2, 1, "#374151", "#ffffff", lambda: self.agregar_numero(".")),
+            ("=", 6, 3, 1, "#10b981", "#ffffff", self.calcular),
         ]
-        
+
         self.botones = {}
         for texto, fila, col, colspan, bg, fg, cmd in botones:
             btn = tk.Button(
@@ -148,31 +149,28 @@ class InterfazCalculadora:
                 activeforeground=fg,
                 bd=0,
                 cursor="hand2",
-                command=cmd
+                command=cmd,
             )
-            btn.grid(row=fila, column=col, columnspan=colspan, 
-                    sticky="nsew", padx=2, pady=2)
-            
-            # Efectos hover
+            btn.grid(row=fila, column=col, columnspan=colspan, sticky="nsew", padx=2, pady=2)
+
             btn.bind("<Enter>", lambda e, b=btn, c=bg: b.configure(bg=self.color_hover(c)))
             btn.bind("<Leave>", lambda e, b=btn, c=bg: b.configure(bg=c))
-            
+
             self.botones[texto] = btn
-        
-        # ===== HISTORIAL =====
+
+        # ===================== HISTORIAL =====================
         historial_label = tk.Label(
             self.main_frame,
             text="📋 Historial",
             font=("Segoe UI", 11, "bold"),
             bg="#1e1e2e",
-            fg="#ffffff"
+            fg="#ffffff",
         )
         historial_label.pack(pady=(5, 5))
-        
-        # Frame para el historial con scrollbar
+
         historial_frame = tk.Frame(self.main_frame, bg="#2d2d44", bd=2, relief=tk.RIDGE)
         historial_frame.pack(fill=tk.BOTH, expand=True)
-        
+
         self.texto_historial = scrolledtext.ScrolledText(
             historial_frame,
             font=("Consolas", 9),
@@ -180,12 +178,11 @@ class InterfazCalculadora:
             fg="#e5e7eb",
             wrap=tk.WORD,
             bd=0,
-            insertbackground="#6366f1"
+            insertbackground="#6366f1",
         )
         self.texto_historial.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         self.texto_historial.config(state=tk.DISABLED)
-        
-        # Botón limpiar historial
+
         self.btn_limpiar_hist = tk.Button(
             self.main_frame,
             text="🗑️ Limpiar Historial",
@@ -196,180 +193,220 @@ class InterfazCalculadora:
             bd=0,
             cursor="hand2",
             command=self.limpiar_historial,
-            pady=6
+            pady=6,
         )
         self.btn_limpiar_hist.pack(fill=tk.X, pady=(5, 0))
-    
+
+    # ======================================================
+    # MÉTODOS CIENTÍFICOS
+    # ======================================================
+    def funcion_cientifica(self, tipo):
+        try:
+            if self.pantalla_texto == "":
+                return
+
+            numero = float(self.pantalla_texto)
+
+            if tipo == "sin":
+                resultado = self.calc.seno(numero)
+
+            elif tipo == "cos":
+                resultado = self.calc.coseno(numero)
+
+            elif tipo == "tan":
+                resultado = self.calc.tangente(numero)
+
+            elif tipo == "sqrt":
+                resultado = self.calc.raiz_cuadrada(numero)
+
+            elif tipo == "ln":
+                resultado = self.calc.log_natural(numero)
+
+            elif tipo == "exp":
+                resultado = self.calc.exponencial(numero)
+
+            elif tipo == "pow":
+                self.primer_numero = numero
+                self.operacion_actual = "^"
+                self.pantalla_operacion.config(text=f"{numero} ^")
+                self.resetear_pantalla = True
+                return
+
+            self.pantalla_texto = str(resultado)
+            self.actualizar_pantalla()
+            self.actualizar_historial()
+            self.resetear_pantalla = True
+
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
+    def insertar_pi(self):
+        self.pantalla_texto = str(self.calc.pi())
+        self.actualizar_pantalla()
+
+    # ======================================================
+    # OPERACIONES GENERALES
+    # ======================================================
     def on_resize(self, event):
-        """NUEVO: Ajustar tamaños de fuente según el tamaño de la ventana"""
         if event.widget == self.root:
             width = self.root.winfo_width()
-            
-            # Ajustar tamaño de fuente de la pantalla principal
             if width < 350:
-                font_size = 24
-                btn_font = 12
+                fsize = 24
+                bsize = 12
             elif width < 400:
-                font_size = 28
-                btn_font = 14
+                fsize = 28
+                bsize = 14
             elif width < 450:
-                font_size = 32
-                btn_font = 16
+                fsize = 32
+                bsize = 16
             else:
-                font_size = 36
-                btn_font = 18
-            
-            self.pantalla.config(font=("Segoe UI", font_size, "bold"))
-            
-            # Ajustar tamaño de botones
+                fsize = 36
+                bsize = 18
+            self.pantalla.config(font=("Segoe UI", fsize, "bold"))
             for btn in self.botones.values():
-                btn.config(font=("Segoe UI", btn_font, "bold"))
-    
+                btn.config(font=("Segoe UI", bsize, "bold"))
+
     def configurar_teclado(self):
-        """NUEVO: Configurar atajos de teclado"""
-        self.root.bind('<Return>', lambda e: self.calcular())
-        self.root.bind('<KP_Enter>', lambda e: self.calcular())
-        self.root.bind('<Escape>', lambda e: self.limpiar())
-        self.root.bind('<BackSpace>', lambda e: self.borrar())
-        
-        # Números
+        self.root.bind("<Return>", lambda e: self.calcular())
+        self.root.bind("<KP_Enter>", lambda e: self.calcular())
+        self.root.bind("<Escape>", lambda e: self.limpiar())
+        self.root.bind("<BackSpace>", lambda e: self.borrar())
+
         for i in range(10):
             self.root.bind(str(i), lambda e, n=str(i): self.agregar_numero(n))
-            self.root.bind(f'<KP_{i}>', lambda e, n=str(i): self.agregar_numero(n))
-        
-        # Operadores
-        self.root.bind('+', lambda e: self.operacion('+'))
-        self.root.bind('-', lambda e: self.operacion('-'))
-        self.root.bind('*', lambda e: self.operacion('×'))
-        self.root.bind('/', lambda e: self.operacion('÷'))
-        self.root.bind('.', lambda e: self.agregar_numero('.'))
-        self.root.bind('<KP_Decimal>', lambda e: self.agregar_numero('.'))
-    
+
+        self.root.bind("+", lambda e: self.operacion("+"))
+        self.root.bind("-", lambda e: self.operacion("-"))
+        self.root.bind("*", lambda e: self.operacion("×"))
+        self.root.bind("/", lambda e: self.operacion("÷"))
+        self.root.bind(".", lambda e: self.agregar_numero("."))
+
     def color_hover(self, color):
-        """Genera un color más claro para el efecto hover"""
         colores = {
             "#ef4444": "#dc2626",
             "#f59e0b": "#d97706",
             "#6366f1": "#4f46e5",
             "#10b981": "#059669",
-            "#374151": "#4b5563"
+            "#374151": "#4b5563",
+            "#4b5563": "#6b7280",
         }
         return colores.get(color, color)
-    
-    def agregar_numero(self, numero):
+
+    # ======================================================
+    # NÚMEROS Y OPERADORES
+    # ======================================================
+    def agregar_numero(self, num):
         if self.resetear_pantalla:
             self.pantalla_texto = ""
             self.resetear_pantalla = False
-        
-        # NUEVO: Verificar límite de caracteres
+
         if len(self.pantalla_texto) >= self.MAX_CARACTERES:
             self.mostrar_advertencia_limite()
             return
-        
-        if numero == "." and "." in self.pantalla_texto:
+
+        if num == "." and "." in self.pantalla_texto:
             return
-        
-        # NUEVO: No permitir múltiples ceros al inicio
-        if numero == "0" and self.pantalla_texto == "0":
+
+        if num == "0" and self.pantalla_texto == "0":
             return
-        
-        if self.pantalla_texto == "0" and numero != ".":
-            self.pantalla_texto = numero
+
+        if self.pantalla_texto == "0" and num != ".":
+            self.pantalla_texto = num
         else:
-            self.pantalla_texto += numero
-        
+            self.pantalla_texto += num
+
         self.actualizar_pantalla()
         self.actualizar_contador_caracteres()
-    
+
     def agregar_operador(self, operador):
         if self.pantalla_texto and self.pantalla_texto[-1] not in ["+", "-", "×", "÷", "%"]:
             self.pantalla_texto += operador
             self.actualizar_pantalla()
-    
+
     def operacion(self, op):
-        if self.pantalla_texto == "" or self.pantalla_texto == "0":
-            return
-        
-        # NUEVO: Eliminar operadores finales antes de procesar
-        while self.pantalla_texto and self.pantalla_texto[-1] in ["+", "-", "×", "÷", "%", "."]:
-            self.pantalla_texto = self.pantalla_texto[:-1]
-        
         if not self.pantalla_texto:
             return
-        
+        while self.pantalla_texto and self.pantalla_texto[-1] in ["+", "-", "×", "÷", "%", "."]:
+            self.pantalla_texto = self.pantalla_texto[:-1]
+        if not self.pantalla_texto:
+            return
+
         if self.operacion_actual is not None:
             self.calcular()
-        
+
         try:
             self.primer_numero = float(self.pantalla_texto)
             self.operacion_actual = op
-            self.pantalla_operacion.config(text=f"{self.formatear_numero(self.pantalla_texto)} {op}")
+            self.pantalla_operacion.config(text=f"{self.primer_numero} {op}")
             self.resetear_pantalla = True
-        except ValueError:
+        except:
             messagebox.showerror("Error", "Número inválido")
             self.limpiar()
-    
+
+    # ======================================================
+    # CALCULAR RESULTADO
+    # ======================================================
     def calcular(self):
-        if self.operacion_actual is None or self.pantalla_texto == "":
+        if not self.operacion_actual or not self.pantalla_texto:
             return
-        
+
         try:
-            segundo_numero = float(self.pantalla_texto)
-            
+            segundo = float(self.pantalla_texto)
+
+            # OPERACIONES NORMALES
             if self.operacion_actual == "+":
-                resultado = self.calc.sumar(self.primer_numero, segundo_numero)
+                resultado = self.calc.sumar(self.primer_numero, segundo)
+
             elif self.operacion_actual == "-":
-                resultado = self.calc.restar(self.primer_numero, segundo_numero)
+                resultado = self.calc.restar(self.primer_numero, segundo)
+
             elif self.operacion_actual == "×":
-                resultado = self.calc.multiplicar(self.primer_numero, segundo_numero)
+                resultado = self.calc.multiplicar(self.primer_numero, segundo)
+
             elif self.operacion_actual == "÷":
-                resultado = self.calc.dividir(self.primer_numero, segundo_numero)
+                resultado = self.calc.dividir(self.primer_numero, segundo)
                 if isinstance(resultado, str):
                     messagebox.showerror("Error", resultado)
                     self.limpiar()
                     return
-            
-            # Formatear resultado
-            if isinstance(resultado, float):
-                if resultado.is_integer():
-                    resultado = int(resultado)
-                else:
-                    resultado = round(resultado, 10)
-            
-            # NUEVO: Verificar si el resultado excede el límite
+
+            # POTENCIA x^y
+            elif self.operacion_actual == "^":
+                resultado = self.calc.potencia(self.primer_numero, segundo)
+
+            # Formatear
+            if isinstance(resultado, float) and resultado.is_integer():
+                resultado = int(resultado)
+
             resultado_str = str(resultado)
             if len(resultado_str) > self.MAX_CARACTERES:
-                # Usar notación científica si es muy largo
-                resultado_str = f"{resultado:.4e}"
-            
+                resultado_str = f"{resultado:.3e}"
+
             self.pantalla_operacion.config(
-                text=f"{self.formatear_numero(str(self.primer_numero))} {self.operacion_actual} {self.formatear_numero(str(segundo_numero))} ="
+                text=f"{self.primer_numero} {self.operacion_actual} {segundo} ="
             )
             self.pantalla_texto = resultado_str
             self.actualizar_pantalla()
             self.actualizar_historial()
-            
+
             self.operacion_actual = None
             self.primer_numero = None
             self.resetear_pantalla = True
-            
-        except ValueError:
-            messagebox.showerror("Error", "Operación inválida")
-            self.limpiar()
+
         except Exception as e:
-            messagebox.showerror("Error", f"Error inesperado: {str(e)}")
+            messagebox.showerror("Error", str(e))
             self.limpiar()
-    
-    def formatear_numero(self, numero):
-        """NUEVO: Formatear número para visualización"""
+
+    # ======================================================
+    # UTILIDADES
+    # ======================================================
+    def formatear_numero(self, num):
         try:
-            num = float(numero)
-            if num.is_integer():
-                return str(int(num))
-            return numero
+            n = float(num)
+            return str(int(n)) if n.is_integer() else num
         except:
-            return numero
-    
+            return num
+
     def limpiar(self):
         self.pantalla_texto = ""
         self.operacion_actual = None
@@ -378,60 +415,50 @@ class InterfazCalculadora:
         self.pantalla.config(text="0")
         self.pantalla_operacion.config(text="")
         self.actualizar_contador_caracteres()
-    
+
     def borrar(self):
         if self.pantalla_texto:
             self.pantalla_texto = self.pantalla_texto[:-1]
             self.actualizar_pantalla()
             self.actualizar_contador_caracteres()
-    
+
     def actualizar_pantalla(self):
-        texto = self.pantalla_texto if self.pantalla_texto else "0"
-        self.pantalla.config(text=texto)
-    
+        self.pantalla.config(text=self.pantalla_texto if self.pantalla_texto else "0")
+
     def actualizar_contador_caracteres(self):
-        """NUEVO: Actualizar contador de caracteres"""
         longitud = len(self.pantalla_texto)
-        color = "#6b7280" if longitud < self.MAX_CARACTERES else "#ef4444"
-        self.label_limite.config(
-            text=f"{longitud}/{self.MAX_CARACTERES}",
-            fg=color
-        )
-    
+        color = "#ef4444" if longitud >= self.MAX_CARACTERES else "#6b7280"
+        self.label_limite.config(text=f"{longitud}/{self.MAX_CARACTERES}", fg=color)
+
     def mostrar_advertencia_limite(self):
-        """NUEVO: Mostrar advertencia visual cuando se alcanza el límite"""
         self.pantalla.config(bg="#7f1d1d")
         self.root.after(200, lambda: self.pantalla.config(bg="#2d2d44"))
-    
+
     def actualizar_historial(self):
         self.texto_historial.config(state=tk.NORMAL)
         self.texto_historial.delete(1.0, tk.END)
-        
+
         historial = self.calc.obtener_historial()
         if not historial:
             self.texto_historial.insert(tk.END, "Sin operaciones aún...\n")
         else:
-            for i, operacion in enumerate(historial, 1):
-                self.texto_historial.insert(tk.END, f"{i}. {operacion}\n")
-        
+            for i, h in enumerate(historial, 1):
+                self.texto_historial.insert(tk.END, f"{i}. {h}\n")
+
         self.texto_historial.config(state=tk.DISABLED)
         self.texto_historial.see(tk.END)
-    
+
     def limpiar_historial(self):
         if not self.calc.historial:
             messagebox.showinfo("Información", "El historial ya está vacío")
             return
-            
-        respuesta = messagebox.askyesno(
-            "Confirmar", 
-            "¿Deseas limpiar todo el historial?"
-        )
-        if respuesta:
+
+        if messagebox.askyesno("Confirmar", "¿Deseas limpiar todo el historial?"):
             self.calc.historial.clear()
             self.actualizar_historial()
             messagebox.showinfo("Éxito", "Historial limpiado correctamente")
 
-# Ejecutar la aplicación
+# Ejecutar
 if __name__ == "__main__":
     root = tk.Tk()
     app = InterfazCalculadora(root)
