@@ -3,7 +3,7 @@ import math
 class Calculadora:
     def __init__(self):
         self.historial = []
-        self._pi = 3.141592653589793
+        self._pi = math.pi
 
     def sumar(self, a, b):
         resultado = a + b
@@ -27,17 +27,20 @@ class Calculadora:
         resultado = a / b
         self.historial.append(f"Dividir: {a} / {b} = {resultado}")
         return resultado
+    
+    def porcentaje(self, a, b):
+        resultado = a * (b / 100)
+        self.historial.append(f"Porcentaje: {a} * ({b} / 100) = {resultado}")
+        return resultado
 
     def obtener_historial(self):
         return self.historial
     
     def seno(self, a):
-        # Normalizar el ángulo al rango [-2π, 2π]
         x = a % (2 * self._pi)
         if x > self._pi:
             x -= 2 * self._pi   
 
-        # Serie de Taylor para seno
         resultado = 0
         termino = x
         n = 1
@@ -50,12 +53,10 @@ class Calculadora:
         return resultado
     
     def coseno(self, a):
-        # Normalizar el ángulo al rango [-2π, 2π]
         x = a % (2 * self._pi)
         if x > self._pi:
             x -= 2 * self._pi
 
-        # Serie de Taylor para coseno
         resultado = 0
         termino = 1
         n = 1
@@ -78,7 +79,15 @@ class Calculadora:
         return resultado
     
     def potencia(self, base, exponente):
-        resultado = base ** exponente
+        try:
+            resultado = base ** exponente
+        except OverflowError:
+            self.historial.append(f"Potencia: {base}^{exponente} = Error (desbordamiento)")
+            return "Error: Resultado demasiado grande"
+        except Exception:
+            self.historial.append(f"Potencia: {base}^{exponente} = Error (operación inválida)")
+            return "Error: Operación de potencia inválida"
+
         self.historial.append(f"Potencia: {base}^{exponente} = {resultado}")
         return resultado
     
@@ -95,13 +104,11 @@ class Calculadora:
             self.historial.append(f"Logaritmo Natural: ln({a}) = Error (número no positivo)")
             return "Error: Logaritmo natural de número no positivo"
         
-        # Usar logaritmo natural de Python para mayor precisión
         resultado = math.log(a)
         self.historial.append(f"Logaritmo Natural: ln({a}) = {resultado}")
         return resultado
     
     def exponencial(self, a):
-        # Serie de Taylor para e^x
         resultado = 0
         termino = 1
         n = 0
@@ -117,6 +124,10 @@ class Calculadora:
         if a < 0 and n % 2 == 0:
             self.historial.append(f"Raíz enésima: raiz({a}, {n}) = Error (número negativo con índice par)")
             return "Error: Raíz enésima de número negativo con índice par"
+        if n == 0:
+            self.historial.append(f"Raíz enésima: raiz({a}, {n}) = Error (índice cero)")
+            return "Error: El índice de la raíz no puede ser cero"
+            
         resultado = a ** (1 / n)
         self.historial.append(f"Raíz enésima: raiz({a}, {n}) = {resultado}")
         return resultado
@@ -137,7 +148,6 @@ class Calculadora:
             self.historial.append(f"Arco Seno: asin({a}) = Error (valor fuera de rango)")
             return "Error: Arco seno fuera de rango"
         
-        # Usar arcoseno de Python para mayor precisión
         resultado = math.asin(a)
         self.historial.append(f"Arco Seno: asin({a}) = {resultado}")
         return resultado
@@ -147,14 +157,11 @@ class Calculadora:
             self.historial.append(f"Arco Coseno: acos({a}) = Error (valor fuera de rango)")
             return "Error: Arco coseno fuera de rango"
         
-        # Usar arcocoseno de Python para mayor precisión
         resultado = math.acos(a)
         self.historial.append(f"Arco Coseno: acos({a}) = {resultado}")
         return resultado
     
     def arcotangente(self, a):
-        # Usar arcotangente de Python para mayor precisión
         resultado = math.atan(a)
         self.historial.append(f"Arco Tangente: atan({a}) = {resultado}")
-        return resultado
-    
+        return resultado  
