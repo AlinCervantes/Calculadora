@@ -1,4 +1,4 @@
-#Calculadora basica en Python
+import math
 
 class Calculadora:
     def __init__(self):
@@ -28,48 +28,49 @@ class Calculadora:
         self.historial.append(f"Dividir: {a} / {b} = {resultado}")
         return resultado
 
-    #Para obtener el historial de operaciones
     def obtener_historial(self):
         return self.historial
     
-    #Calculadora avanzada con funciones adicionales
-
     def seno(self, a):
-        #Convertir grados a radianes
-        x= a % (2 * self._pi)
+        # Normalizar el ángulo al rango [-2π, 2π]
+        x = a % (2 * self._pi)
         if x > self._pi:
             x -= 2 * self._pi   
 
+        # Serie de Taylor para seno
         resultado = 0
         termino = x
         n = 1
-        while abs(termino) > 1e-15:
+        while abs(termino) > 1e-15 and n < 100:
             resultado += termino
             termino *= -x * x / ((2 * n) * (2 * n + 1))
             n += 1
+        
         self.historial.append(f"Seno: seno({a}) = {resultado}")
         return resultado
     
     def coseno(self, a):
-        #Convertir grados a radianes
-        x= a % (2 * self._pi)
+        # Normalizar el ángulo al rango [-2π, 2π]
+        x = a % (2 * self._pi)
         if x > self._pi:
             x -= 2 * self._pi
 
+        # Serie de Taylor para coseno
         resultado = 0
         termino = 1
         n = 1
-        while abs(termino) > 1e-15:
+        while abs(termino) > 1e-15 and n < 100:
             resultado += termino
             termino *= -x * x / ((2 * n - 1) * (2 * n))
             n += 1
+        
         self.historial.append(f"Coseno: coseno({a}) = {resultado}")
         return resultado
     
     def tangente(self, a):
         seno_a = self.seno(a)
         coseno_a = self.coseno(a)
-        if coseno_a == 0:
+        if abs(coseno_a) < 1e-10:
             self.historial.append(f"Tangente: tangente({a}) = Error (coseno es cero)")
             return "Error: Tangente indefinida (coseno es cero)"
         resultado = seno_a / coseno_a
@@ -93,27 +94,22 @@ class Calculadora:
         if a <= 0:
             self.historial.append(f"Logaritmo Natural: ln({a}) = Error (número no positivo)")
             return "Error: Logaritmo natural de número no positivo"
-        resultado = 0
-        x = (a - 1) / (a + 1)
-    
-        termino = x
-        n = 1
-        while abs(termino) > 1e-15:
-            resultado += termino / n
-            termino *= x * x
-            n += 2
-        resultado *= 2
+        
+        # Usar logaritmo natural de Python para mayor precisión
+        resultado = math.log(a)
         self.historial.append(f"Logaritmo Natural: ln({a}) = {resultado}")
         return resultado
     
     def exponencial(self, a):
+        # Serie de Taylor para e^x
         resultado = 0
         termino = 1
         n = 0
-        while abs(termino) > 1e-15:
+        while abs(termino) > 1e-15 and n < 100:
             resultado += termino
             n += 1
             termino *= a / n
+        
         self.historial.append(f"Exponencial: e^{a} = {resultado}")
         return resultado
     
@@ -136,19 +132,13 @@ class Calculadora:
     def pi(self):
         return self._pi
     
-    #Operaciones aritmeticas mas complejas
-
     def arcoseno(self, a):
         if a < -1 or a > 1:
             self.historial.append(f"Arco Seno: asin({a}) = Error (valor fuera de rango)")
             return "Error: Arco seno fuera de rango"
-        resultado = 0
-        termino = a
-        n = 0
-        while abs(termino) > 1e-15:
-            resultado += termino / (2 * n + 1)
-            termino *= (a * a * (2 * n + 1)) / (2 * (n + 1) * (2 * n + 3))
-            n += 1
+        
+        # Usar arcoseno de Python para mayor precisión
+        resultado = math.asin(a)
         self.historial.append(f"Arco Seno: asin({a}) = {resultado}")
         return resultado
     
@@ -156,21 +146,15 @@ class Calculadora:
         if a < -1 or a > 1:
             self.historial.append(f"Arco Coseno: acos({a}) = Error (valor fuera de rango)")
             return "Error: Arco coseno fuera de rango"
-        resultado = (self._pi / 2) - self.arcoseno(a)
+        
+        # Usar arcocoseno de Python para mayor precisión
+        resultado = math.acos(a)
         self.historial.append(f"Arco Coseno: acos({a}) = {resultado}")
         return resultado
     
     def arcotangente(self, a):
-        resultado = 0
-        termino = a
-        n = 0
-        while abs(termino) > 1e-15:
-            if n % 2 == 0:
-                resultado += termino / (2 * n + 1)
-            else:
-                resultado -= termino / (2 * n + 1)
-            termino *= a * a
-            n += 1
+        # Usar arcotangente de Python para mayor precisión
+        resultado = math.atan(a)
         self.historial.append(f"Arco Tangente: atan({a}) = {resultado}")
         return resultado
-
+    
