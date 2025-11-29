@@ -290,8 +290,14 @@ class InterfazCalculadora:
             return
         
         try:
-            valor = float(self.pantalla_texto)
+            # MANEJAR π ANTES de convertir a float
+            if self.pantalla_texto == "π":
+                valor = self.calc.pi()  # Usar el valor numérico de π directamente
+            else:
+                # Intentar convertir números normales
+                valor = float(self.pantalla_texto)
             
+            # Realizar la operación científica
             if funcion == "sin":
                 resultado = self.calc.seno(valor)
             elif funcion == "cos":
@@ -313,18 +319,28 @@ class InterfazCalculadora:
             elif funcion == "inv":
                 resultado = self.calc.inverso(valor)
             
+            # Manejar errores de la calculadora
             if isinstance(resultado, str):
                 messagebox.showerror("Error", resultado)
                 return
             
-            self.pantalla_operacion.config(text=f"{funcion}({self.formatear_numero(str(valor))})")
+            # Mostrar resultado
+            if self.pantalla_texto == "π":
+                # Mostrar π en lugar del valor numérico
+                display_valor = "π"
+            else:
+                display_valor = self.formatear_numero(str(valor))
+                
+            self.pantalla_operacion.config(text=f"{funcion}({display_valor})")
             self.pantalla_texto = self.formatear_resultado(resultado)
             self.actualizar_pantalla()
             self.actualizar_historial()
             self.resetear_pantalla = True
             
         except ValueError:
-            messagebox.showerror("Error", "Valor inválido")
+            messagebox.showerror("Error", f"Valor inválido: '{self.pantalla_texto}'")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error inesperado: {str(e)}")
     
     def potencia(self, exp):
         if not self.pantalla_texto or self.pantalla_texto == "0":
@@ -380,14 +396,21 @@ class InterfazCalculadora:
 
     '''
     
-    def insertar_pi(self):
+    def insertar_pi2(self):
     # Siempre reemplazar el contenido actual con π
         self.pantalla_texto = str(self.calc.pi())
         self.actualizar_pantalla()
         self.actualizar_contador_caracteres()
         self.resetear_pantalla = False
 
+    def insertar_pi(self):
+    # Versión simple: reemplazar todo el contenido con π
+        self.pantalla_texto = "π"
+        self.actualizar_pantalla()
+        self.actualizar_contador_caracteres()
+        self.resetear_pantalla = False
 
+    
 
     def formatear_resultado(self, resultado):
         if isinstance(resultado, float):
@@ -501,7 +524,12 @@ class InterfazCalculadora:
             return
         
         try:
-            segundo_numero = float(self.pantalla_texto)
+            #segundo_numero = float(self.pantalla_texto)
+            if self.pantalla_texto == "π":
+                segundo_numero = self.calc.pi()
+            else:
+                segundo_numero = float(self.pantalla_texto)
+
             
             if self.operacion_actual == "+":
                 resultado = self.calc.sumar(self.primer_numero, segundo_numero)
