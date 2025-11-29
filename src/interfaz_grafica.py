@@ -366,6 +366,7 @@ class InterfazCalculadora:
             except:
                 messagebox.showerror("Error", "Operación inválida")
     
+    '''
     def insertar_pi(self):
         if self.resetear_pantalla:
             self.pantalla_texto = ""
@@ -376,7 +377,18 @@ class InterfazCalculadora:
             self.pantalla_texto += pi_value
             self.actualizar_pantalla()
             self.actualizar_contador_caracteres()
+
+    '''
     
+    def insertar_pi(self):
+    # Siempre reemplazar el contenido actual con π
+        self.pantalla_texto = str(self.calc.pi())
+        self.actualizar_pantalla()
+        self.actualizar_contador_caracteres()
+        self.resetear_pantalla = False
+
+
+
     def formatear_resultado(self, resultado):
         if isinstance(resultado, float):
             if resultado.is_integer():

@@ -5,6 +5,9 @@ class Calculadora:
         self.historial = []
         self._pi = math.pi
 
+    def pi(self):
+        return self._pi
+
     def sumar(self, a, b):
         resultado = a + b
         self.historial.append(f"Sumar: {a} + {b} = {resultado}")
